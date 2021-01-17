@@ -2,17 +2,18 @@
 const newName = document.getElementById('name');
 const newAge = document.getElementById('age');
 const button = document.querySelector('button');
-
-const genOne = document.getElementById('g1');
-const genTwo = document.getElementById('g2');
-const genThree = document.getElementById('g3');
+let tree = document.getElementById('tree');
+let familyTree;
+let currSelected;
+let generationToAddTo = 1;
 
 class FamilyTree {
-  constructor(name) {
+  constructor(name, age) {
     if (typeof name !== 'string') {
       throw 'error';
     }
     this.value = name;
+    this.age = age;
     this.children = [];
   }
 
@@ -21,13 +22,15 @@ class FamilyTree {
   }
 
   findMember(name) {
-    let child = undefined;
-    this.children.forEach(obj => {
-      if (obj.value === name) {
-        child = obj;
+      if (this.value === name) {
+        return this
+      } else {
+        for (let i = 0; i < this.children.length; i++) {
+          if (this.children[i].findMember(name) !== undefined) {
+            return this.children[i].findMember(name)
+          }
+        }
       }
-    });
-    return child;
   }
 
   log() {
@@ -46,28 +49,67 @@ class FamilyTree {
     return members(this, '--');
   }
 
-  insert(name) {
-    let child = new FamilyTree(name);
+  insert(name, age) {
+    let child = new FamilyTree(name, age);
     this.children.push(child);
   }
 }
 
-let node;
-
 button.addEventListener("click", function(){
-  if(!node){
-    node = new FamilyTree(newName.value)
-    document.getElementById('h1').hidden = false;
-    genOne.innerHTML = `<li>${node.value}</li>`;
+
+  if(!familyTree){
+    familyTree = new FamilyTree(newName.value, newAge.value)
+
+    let h3 = document.createElement('h3');
+    h3.textContent = (`Generation ${generationToAddTo}`);
+    tree.appendChild(h3);
+
+    let ul = document.createElement('ul');
+    ul.setAttribute('id', `gen${generationToAddTo}`)
+    tree.appendChild(ul);
+
+    let li = document.createElement('li');
+    li.textContent = `${familyTree.value} ${familyTree.age}`;
+    li.setAttribute("onclick", "toAdd(this)")
+    li.setAttribute("selected", "true")
+    ul.appendChild(li)
+
+    tree.appendChild(ul);
+    currSelected = li;
+    generationToAddTo++;
   }
 
   else{
-    node.insert(newName.value);
-    document.getElementById('h2').hidden = false;
-    genTwo.innerHTML = `<li>${node.children[0]['value']}</li>`;
+    let ul = document.getElementById(`gen${generationToAddTo}`);
+
+
+    if(ul === null){
+      let h3 = document.createElement('h3');
+      h3.textContent = (`Generation ${generationToAddTo}`);
+      tree.appendChild(h3);
+
+      ul = document.createElement('ul');
+      ul.setAttribute('id', `gen${generationToAddTo}`)
+      tree.appendChild(ul);
+    }
+
+    let parent = familyTree.findMember(currSelected.textContent.split(" ")[0]);
+    parent.insert(newName.value, newAge.value);
+
+    let li = document.createElement('li');
+    li.textContent = `${newName.value} ${newAge.value}`;
+    li.setAttribute("onclick", "toAdd(this)")
+    li.setAttribute("selected", "false")
+    ul.appendChild(li)
   }
 
-
 });
+
+function toAdd(obj){
+  currSelected.setAttribute('selected', 'false');
+  currSelected = obj;
+  generationToAddTo = parseInt(currSelected.parentElement.id.slice(-1)) + 1;
+}
+
 
 module.exports = FamilyTree;
