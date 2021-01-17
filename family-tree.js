@@ -56,32 +56,7 @@ class FamilyTree {
 }
 
 button.addEventListener("click", function(){
-
-  if(!familyTree){
-    familyTree = new FamilyTree(newName.value, newAge.value)
-
-    let h3 = document.createElement('h3');
-    h3.textContent = (`Generation ${generationToAddTo}`);
-    tree.appendChild(h3);
-
-    let ul = document.createElement('ul');
-    ul.setAttribute('id', `gen${generationToAddTo}`)
-    tree.appendChild(ul);
-
-    let li = document.createElement('li');
-    li.textContent = `${familyTree.value} ${familyTree.age}`;
-    li.setAttribute("onclick", "toAdd(this)")
-    li.setAttribute("selected", "true")
-    ul.appendChild(li)
-
-    tree.appendChild(ul);
-    currSelected = li;
-    generationToAddTo++;
-  }
-
-  else{
     let ul = document.getElementById(`gen${generationToAddTo}`);
-
 
     if(ul === null){
       let h3 = document.createElement('h3');
@@ -93,16 +68,25 @@ button.addEventListener("click", function(){
       tree.appendChild(ul);
     }
 
-    let parent = familyTree.findMember(currSelected.textContent.split(" ")[0]);
-    parent.insert(newName.value, newAge.value);
 
     let li = document.createElement('li');
     li.textContent = `${newName.value} ${newAge.value}`;
     li.setAttribute("onclick", "toAdd(this)")
     li.setAttribute("selected", "false")
     ul.appendChild(li)
-  }
 
+    if(familyTree){
+      let parentName = currSelected.textContent.split(' ').slice(0,-1).join(" ");
+      let parent = familyTree.findMember(parentName);
+      parent.insert(newName.value, newAge.value);
+    }
+    else{
+      familyTree = new FamilyTree(newName.value, newAge.value)
+      generationToAddTo++;
+      currSelected = li;
+    }
+
+    console.log(familyTree.log());
 });
 
 function toAdd(obj){
